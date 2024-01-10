@@ -6,5 +6,5 @@ Just add ^ to the end of the question you want to search in Google. The first 3 
 ### Example:
 what is cheshire cat framework?^
 
-<img src="https://github.com/pazoff/Google-Cat-Plugin/blob/8dd3315c6041f6afdbc5100caff69b366ce2a32d/google-cat-demo.png">
+<img src="https://github.com/pazoff/Google-Cat-Plugin/blob/0a188f1e3a590aa79ddc983e458cd6889a852cbc/google-cat-demo.png">
 
