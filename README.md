@@ -1,4 +1,5 @@
 # Google Cat Plugin
+<img src="https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/google-cat-logo.jpg">
 Educate your [Cheshire cat](https://github.com/cheshire-cat-ai/core) directly from Google. The plugin searches Google for a question and ingests some of the result websites.
 
 ## How to use it?
