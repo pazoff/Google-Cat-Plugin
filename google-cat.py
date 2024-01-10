@@ -32,11 +32,12 @@ def before_cat_reads_message(user_message_json: dict, cat):
      for i, url in enumerate(get_search_results, start=1):
         try:
             ingest_result = cat.rabbit_hole.ingest_file(cat, url, 400, 100)
-            cat.send_ws_message(content=str(i) + '. Ingestion of ' + url + ' Result: OK', msg_type='chat')
+            print(str(i) + ". Ingestion of " + url + " Result: Ingested")
+            cat.send_ws_message(content=str(i) + '. Ingestion of ' + url + ' Result: Ingested', msg_type='chat')
             time.sleep(1)
         except Exception as e:
-            pass
-            #cat.send_ws_message(content='ERROR: ' + url + ' The error is: ' + str(e), msg_type='chat')
+            print(str(i) + ". Ingestion of " + url + " Result: NOT Ingested")
+            cat.send_ws_message(content=str(i) + '. Ingestion of ' + url + ' Result: NOT Ingested', msg_type='chat')
 
      
      time.sleep(1)
