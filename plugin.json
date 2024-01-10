@@ -1,0 +1,8 @@
+{
+    "name": "Google Cat",
+    "description": "Educate your Cheshire cat directly from Google. The plugin searches Google for a question and ingests some of the result websites.",
+    "author_name": "Pazoff",
+    "tags": "google,search,questions",
+    "plugin_url": "https://github.com/pazoff/Google-Cat-Plugin",
+    "version": "0.0.1"
+}
