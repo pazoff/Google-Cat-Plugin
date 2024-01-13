@@ -1,9 +1,9 @@
 {
     "name": "Google Cat",
-    "description": "Educate your Cheshire cat directly from Google. The plugin searches Google for a question and ingests some of the result websites.",
+    "description": "Educate your Cheshire cat directly from Google. The plugin searches Google for a question and ingests some of the result websites. How to use it? Just add ^ to the end of the question you want to search in Google. The first 3-5 result webpages will be ingested to your cat's memory. Example: what is cheshire cat framework?^",
     "author_name": "Pazoff",
     "tags": "google,search,questions",
     "plugin_url": "https://github.com/pazoff/Google-Cat-Plugin",
     "thumb": "https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/google-cat-logo.jpg",
-    "version": "0.0.1"
+    "version": "0.0.2"
 }
