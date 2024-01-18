@@ -10,3 +10,9 @@ what is cheshire cat framework?^
 
 <img src="https://github.com/pazoff/Google-Cat-Plugin/blob/0a188f1e3a590aa79ddc983e458cd6889a852cbc/google-cat-demo.png">
 
+<img src="https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/img/google-cat-auto-search.png">
+
+<img src="https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/img/google-cat-ingesting.png">
+
+<img src="https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/img/google-cat-settings.png">
+
