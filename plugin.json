@@ -1,6 +1,6 @@
 {
     "name": "Google Cat",
-    "description": "Educate your Cheshire cat directly from Google. The plugin searches Google for a question and ingests some of the result websites. How to use it? Just add ^ to the end of the question you want to search in Google. The first 3-5 result webpages will be ingested to your cat's memory. Example: what is cheshire cat framework?^",
+    "description": "Educate your Cheshire cat directly from Google. The plugin searches Google for a question and ingests some of the result websites. How to use it? Just add ^ to the end of the question you want to search in Google. Example: what is cheshire cat framework?^. The plugin features also automatic web search and comes with customizable settings, allowing you to adjust the declarative memory threshold that triggers automatic web searches and specify the number of web pages to save to your cat's memory.",
     "author_name": "Pazoff",
     "tags": "google,search,questions",
     "plugin_url": "https://github.com/pazoff/Google-Cat-Plugin",
