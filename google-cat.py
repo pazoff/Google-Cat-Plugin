@@ -42,6 +42,7 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
         if i > num_results_to_fetch:
             break
         try:
+            cat.send_ws_message('The Cat is ingesting ' + url + ' ...', msg_type='chat_token')
             cat.rabbit_hole.ingest_file(cat, url, 400, 100)
             print(str(i) + ". Ingestion of " + url + " Result: Ingested")
             cat.send_ws_message(content=str(i) + '. Ingestion of ' + url + ' Result: <b>Ingested</b>', msg_type='chat')
