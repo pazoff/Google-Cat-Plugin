@@ -54,6 +54,46 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
     return "Browsing the web has <b>finished</b>."
 
 
+
+
+def automatic_web_search(search_term, cat):
+    
+    if search_term.endswith('*'):
+        return 
+
+    # Load the settings
+    settings = cat.mad_hatter.get_plugin().load_settings()
+    webpages_to_ingest = settings.get("required_Webpages_to_ingest")
+    web_search_threshold = settings.get("required_Web_search_threshold")
+
+    if (webpages_to_ingest == None) or (webpages_to_ingest < 1):
+        webpages_to_ingest = default_webpages_to_ingest
+    
+    if (web_search_threshold is None) or (web_search_threshold < 0) or (web_search_threshold > 1):
+        web_search_threshold = default_web_search_threshold
+
+    cat_declarative_memories = cat.working_memory["declarative_memories"]
+
+    def do_the_web_search():
+        if len(cat_declarative_memories) == 0:
+            declarative_memory_score = str(0)
+        else:
+            declarative_memory_score = str(cat_declarative_memories[1][1])
+
+        cat.send_ws_message(content='The highest score of the results from the <b>Declarative memory</b> is <b>' + declarative_memory_score + "</b> <br>The Web Search Threshold is set to <b>" + str(web_search_threshold) + "</b> in the Google Cat plugin <b>settings</b>. <br><br><b>Commencing Google Search ...</b>", msg_type='chat')
+        cat.send_ws_message(content=browse_the_web(search_term, cat, get_results=webpages_to_ingest), msg_type='chat')
+        cat.recall_relevant_memories_to_working_memory()
+        cat.send_ws_message(content='Cheshire cat is thinking on ' + search_term + ' ...', msg_type='chat_token')
+    
+    # Check if the index is in range
+    if 0 <= 1 < len(cat_declarative_memories):
+        if cat_declarative_memories[1][1] < web_search_threshold:
+            do_the_web_search()        
+    else:
+        do_the_web_search()
+
+
+
 @hook
 def before_cat_reads_message(user_message_json: dict, cat):
 
@@ -76,46 +116,7 @@ def before_cat_reads_message(user_message_json: dict, cat):
         cat.send_ws_message(content=result, msg_type='chat')
         cat.send_ws_message(content='Cheshire cat is thinking on ' + message + ' ...', msg_type='chat_token')
         user_message_json["text"] = message
+    else:
+        automatic_web_search(message, cat)
 
     return user_message_json
-    
-
-@hook(priority=5)
-def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
-    #cat.recall_relevant_memories_to_working_memory()
-
-    if (agent_input["input"].endswith('*')) or (agent_input["input"].endswith('^')):
-        return agent_input
-
-    # Load the settings
-    settings = cat.mad_hatter.get_plugin().load_settings()
-    webpages_to_ingest = settings.get("required_Webpages_to_ingest")
-    web_search_threshold = settings.get("required_Web_search_threshold")
-
-    if (webpages_to_ingest == None) or (webpages_to_ingest < 1):
-        webpages_to_ingest = default_webpages_to_ingest
-    
-    if (web_search_threshold is None) or (web_search_threshold < 0) or (web_search_threshold > 1):
-        web_search_threshold = default_web_search_threshold
-
-    cat_declarative_memories = cat.working_memory["declarative_memories"]
-
-    def do_the_web_search():
-        if len(cat_declarative_memories) == 0:
-            declarative_memory_score = str(0)
-        else:
-            declarative_memory_score = str(cat_declarative_memories[1][1])
-
-        cat.send_ws_message(content='The highest score of the results from the <b>Declarative memory</b> is <b>' + declarative_memory_score + "</b> <br>The Web Search Threshold is set to <b>" + str(web_search_threshold) + "</b> in the Google Cat plugin <b>settings</b>. <br><br><b>Commencing Google Search ...</b>", msg_type='chat')
-        cat.send_ws_message(content=browse_the_web(agent_input["input"], cat, get_results=webpages_to_ingest), msg_type='chat')
-        cat.recall_relevant_memories_to_working_memory()
-        cat.send_ws_message(content='Cheshire cat is thinking on ' + agent_input["input"] + ' ...', msg_type='chat_token')
-    
-    # Check if the index is in range
-    if 0 <= 1 < len(cat_declarative_memories):
-        if cat_declarative_memories[1][1] < web_search_threshold:
-            do_the_web_search()        
-    else:
-        do_the_web_search()
-
-    return agent_input
