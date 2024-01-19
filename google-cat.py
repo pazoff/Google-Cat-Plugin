@@ -116,6 +116,7 @@ def before_cat_reads_message(user_message_json: dict, cat):
         cat.send_ws_message(content=result, msg_type='chat')
         cat.send_ws_message(content='Cheshire cat is thinking on ' + message + ' ...', msg_type='chat_token')
         user_message_json["text"] = message
+        cat.recall_relevant_memories_to_working_memory()
     else:
         automatic_web_search(message, cat)
 
