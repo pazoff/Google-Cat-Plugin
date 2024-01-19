@@ -5,7 +5,7 @@ from googlesearch import search
 
 # Settings
 
-default_web_search_threshold = 0.885
+default_web_search_threshold = 0.5
 default_webpages_to_ingest = 3
 
 class GoogleCatSettings(BaseModel):
