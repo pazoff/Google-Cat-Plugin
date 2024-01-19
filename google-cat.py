@@ -84,6 +84,9 @@ def before_cat_reads_message(user_message_json: dict, cat):
 def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
     #cat.recall_relevant_memories_to_working_memory()
 
+    if (agent_input["input"].endswith('*')) or (agent_input["input"].endswith('^')):
+        return agent_input
+
     # Load the settings
     settings = cat.mad_hatter.get_plugin().load_settings()
     webpages_to_ingest = settings.get("required_Webpages_to_ingest")
