@@ -9,7 +9,7 @@ default_web_search_threshold = 0.5
 default_webpages_to_ingest = 3
 
 class GoogleCatSettings(BaseModel):
-    # API key
+    auto_web_search: bool = True
     required_Web_search_threshold: float = default_web_search_threshold
     required_Webpages_to_ingest: int = default_webpages_to_ingest
 
@@ -63,8 +63,15 @@ def automatic_web_search(search_term, cat):
 
     # Load the settings
     settings = cat.mad_hatter.get_plugin().load_settings()
+    auto_web_search = settings.get("auto_web_search")
     webpages_to_ingest = settings.get("required_Webpages_to_ingest")
     web_search_threshold = settings.get("required_Web_search_threshold")
+
+    if auto_web_search == None:
+        auto_web_search = True
+
+    if auto_web_search == False:
+        return
 
     if (webpages_to_ingest == None) or (webpages_to_ingest < 1):
         webpages_to_ingest = default_webpages_to_ingest
