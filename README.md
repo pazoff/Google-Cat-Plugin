@@ -21,3 +21,7 @@ what is cheshire cat framework?^
 
 <img src="https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/img/google-cat-settings.png">
 
+* added option to turn on/off the auto web search
+
+<img src="https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/img/turn-auto-web-search-on-off.png">
+
