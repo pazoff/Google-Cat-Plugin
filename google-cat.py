@@ -54,8 +54,6 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
     return "Browsing the web has <b>finished</b>."
 
 
-
-
 def automatic_web_search(search_term, cat):
     
     if search_term.endswith('*'):
@@ -99,31 +97,35 @@ def automatic_web_search(search_term, cat):
     else:
         do_the_web_search()
 
-
-
-@hook
-def before_cat_reads_message(user_message_json: dict, cat):
-
+def manual_web_search(u_message, cat):
     # Load the settings
     settings = cat.mad_hatter.get_plugin().load_settings()
     webpages_to_ingest = settings.get("required_Webpages_to_ingest")
     
     if (webpages_to_ingest == None) or (webpages_to_ingest < 1):
         webpages_to_ingest = default_webpages_to_ingest
+
+
+    result = browse_the_web(u_message, cat, get_results=webpages_to_ingest)
+         
+    print("Ingestion of URLs finished. Cheshire cat is thinking on " + u_message)
+    cat.send_ws_message(content=result, msg_type='chat')
+    cat.send_ws_message(content='Cheshire cat is thinking on ' + u_message + ' ...', msg_type='chat_token')
+        
+    cat.recall_relevant_memories_to_working_memory()
+
+@hook
+def before_cat_reads_message(user_message_json: dict, cat):
     
     message = user_message_json["text"]
     
     if message.endswith('^'):
 
         message = message[:-1]
+
+        manual_web_search(message, cat)
         
-        result = browse_the_web(message, cat, get_results=webpages_to_ingest)
-         
-        print("Ingestion of URLs finished. Cheshire cat is thinking on " + message)
-        cat.send_ws_message(content=result, msg_type='chat')
-        cat.send_ws_message(content='Cheshire cat is thinking on ' + message + ' ...', msg_type='chat_token')
         user_message_json["text"] = message
-        cat.recall_relevant_memories_to_working_memory()
     else:
         automatic_web_search(message, cat)
 
