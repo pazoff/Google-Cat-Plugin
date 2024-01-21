@@ -3,7 +3,7 @@ Turn ★ into ⭐ (top-right corner) if you like the project!
 
 <img width="50%" src="https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/google-cat-logo.jpg">
 
-Educate your [Cheshire cat](https://github.com/cheshire-cat-ai/core) directly from Google. The plugin searches Google for a question and ingests some of the result websites.
+Educate your [Cheshire cat](https://github.com/cheshire-cat-ai/core) directly from Google. The plugin searches Google for a question and ingests some of the result websites in the background, so you can continue working with the Cat.
 
 ## How to use it?
 Just add ^ to the end of the question you want to search in Google. The result webpages will be ingested to your cat's memory.
@@ -26,4 +26,6 @@ what is cheshire cat framework?^
 * added option to turn on/off the auto web search
 
 <img src="https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/img/turn-auto-web-search-on-off.png">
+
+* The plugin now ingests multiple URLs at the same time, in the background, so you can continue working with the cat
 
