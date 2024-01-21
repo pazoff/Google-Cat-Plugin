@@ -56,7 +56,11 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
     
     # Print and send messages about the search results
     formatted_results_message = "<br>".join(results_from_google_search)
-    cat.send_ws_message(content=f"Results for <b>{message}</b> from Google search:<br>{formatted_results_message}<br><br>The first <b>{num_results_to_fetch} URLs</b> will be ingested to the Cat's memory in the background ...", msg_type='chat')
+    info_message = (
+        f"Results for <b>{message}</b> from Google search:<br>{formatted_results_message}<br><br>"
+        f"The first <b>{num_results_to_fetch} URLs</b> will be ingested to the Cat's memory in the background ..."
+    )
+    cat.send_ws_message(content=info_message, msg_type='chat')
 
     # Create a list to store the ingestion threads
     #ingestion_threads = []
