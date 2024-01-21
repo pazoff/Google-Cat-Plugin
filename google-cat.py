@@ -21,7 +21,7 @@ class GoogleCatSettings(BaseModel):
 def settings_schema():
     return GoogleCatSettings.schema()
 
-# Function to perform a Google search and return a list of URLs
+# Function to perform a Google search and return a list of formatted URLs
 def google_search_urls(query, url_results):
     try:
         search_results = list(search(query, sleep_interval=5, num_results=url_results))
@@ -52,13 +52,11 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
     
     # Perform the Google search and get results
     get_search_results = google_search_urls(message, num_results_to_fetch)
+    results_from_google_search = [f"{i + 1}. {url}" for i, url in enumerate(get_search_results)]
     
     # Print and send messages about the search results
-    results_from_google_search = str(get_search_results)
-    results_from_google_search = results_from_google_search[1:-1]
-    print(f"Results from google search: {results_from_google_search}")
-    cat.send_ws_message(content='Results for <b>' + message + '</b> from Google search:<br>' + results_from_google_search, msg_type='chat')
-    cat.send_ws_message(content=f"The first <b>{num_results_to_fetch} URLs</b> will be ingested to the Cat's memory in the background ...", msg_type='chat')
+    formatted_results_message = "<br>".join(results_from_google_search)
+    cat.send_ws_message(content=f"Results for <b>{message}</b> from Google search:<br>{formatted_results_message}<br><br>The first <b>{num_results_to_fetch} URLs</b> will be ingested to the Cat's memory in the background ...", msg_type='chat')
 
     # Create a list to store the ingestion threads
     #ingestion_threads = []
