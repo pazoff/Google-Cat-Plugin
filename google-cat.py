@@ -2,6 +2,7 @@ from cat.mad_hatter.decorators import tool, hook, plugin
 from typing import List, Union, Dict
 from pydantic import BaseModel
 from googlesearch import search
+import threading
 
 # Settings
 
@@ -9,7 +10,7 @@ from googlesearch import search
 default_web_search_threshold = 0.5
 default_webpages_to_ingest = 3
 
-# Define a Pydantic model for Google Cat settings
+
 class GoogleCatSettings(BaseModel):
     auto_web_search: bool = True
     required_Web_search_threshold: float = default_web_search_threshold
@@ -30,6 +31,18 @@ def google_search_urls(query, url_results):
 
 # Function to browse the web based on a search query
 def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
+    
+    # Function to ingest a single URL in the background
+    def ingest_url(cat, url):
+        try:
+            cat.rabbit_hole.ingest_file(cat, url, 400, 100)
+            print(url + " Result: Ingested")
+            #cat.send_ws_message(content=url + ' Result: <b>Ingested</b>', msg_type='chat')
+        except Exception as e:
+            print(url + " Result: NOT Ingested")
+            #cat.send_ws_message(content=url + ' Result: <b>NOT</b> Ingested', msg_type='chat')
+        
+    
     num_results_to_fetch = get_results
     message = tool_input
     
@@ -41,35 +54,48 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
     get_search_results = google_search_urls(message, num_results_to_fetch)
     
     # Print and send messages about the search results
-    print("Results from google search: " + str(get_search_results))
-    cat.send_ws_message(content='Results for <b>' + message + '</b> from Google search:<br>' + str(get_search_results), msg_type='chat')
-    cat.send_ws_message(content=f"The first <b>{num_results_to_fetch} URLs</b> will be ingested to the Cat's memory ...", msg_type='chat')
+    results_from_google_search = str(get_search_results)
+    results_from_google_search = results_from_google_search[1:-1]
+    print(f"Results from google search: {results_from_google_search}")
+    cat.send_ws_message(content='Results for <b>' + message + '</b> from Google search:<br>' + results_from_google_search, msg_type='chat')
+    cat.send_ws_message(content=f"The first <b>{num_results_to_fetch} URLs</b> will be ingested to the Cat's memory in the background ...", msg_type='chat')
 
-    # Iterate over the search results and ingest them into Cat's memory
+    # Create a list to store the ingestion threads
+    #ingestion_threads = []
+
+    # Iterate over the search results and ingest them into Cat's memory in the background
     for i, url in enumerate(get_search_results, start=1):
         if i > num_results_to_fetch:
             break
-        try:
-            cat.send_ws_message('The Cat is ingesting ' + url + ' ...', msg_type='chat_token')
-            cat.rabbit_hole.ingest_file(cat, url, 400, 100)
-            print(str(i) + ". Ingestion of " + url + " Result: Ingested")
-            cat.send_ws_message(content=str(i) + '. Ingestion of ' + url + ' Result: <b>Ingested</b>', msg_type='chat')
-        except Exception as e:
-            print(str(i) + ". Ingestion of " + url + " Result: NOT Ingested")
-            cat.send_ws_message(content=str(i) + '. Ingestion of ' + url + ' Result: <b>NOT</b> Ingested', msg_type='chat')
+        
+        # Create a new thread for each URL ingestion
+        t = threading.Thread(target=ingest_url, args=(cat, url))
+        
+        # Start the thread
+        t.start()
+        
+        # Add the thread to the list
+        #ingestion_threads.append(t)
+
+    # Join all the threads to wait for all URLs to be ingested
+    #for t in ingestion_threads:
+        #t.join()
 
     return "Browsing the web has <b>finished</b>."
+
+
 
 # Function for automatic web search based on settings
 def automatic_web_search(search_term, cat):
     if search_term.endswith('*'):
-        return 
+        return False
 
     # Load settings
     settings = cat.mad_hatter.get_plugin().load_settings()
     auto_web_search = settings.get("auto_web_search")
     webpages_to_ingest = settings.get("required_Webpages_to_ingest")
     web_search_threshold = settings.get("required_Web_search_threshold")
+    search_done = False
 
     # Set default values if not provided
     if auto_web_search is None:
@@ -77,7 +103,7 @@ def automatic_web_search(search_term, cat):
 
     # Return if automatic web search is disabled
     if auto_web_search is False:
-        return
+        return False
 
     # Set default values for missing or invalid settings
     if (webpages_to_ingest is None) or (webpages_to_ingest < 1):
@@ -96,19 +122,29 @@ def automatic_web_search(search_term, cat):
             declarative_memory_score = str(cat_declarative_memories[1][1])
 
         # Send messages about starting the web search
-        cat.send_ws_message(content='The highest score of the results from the <b>Declarative memory</b> is <b>' + declarative_memory_score + "</b> <br>The Web Search Threshold is set to <b>" + str(web_search_threshold) + "</b> in the Google Cat plugin <b>settings</b>. <br><br><b>Commencing Google Search ...</b>", msg_type='chat')
+        info_message = (
+        "The highest score of the results from the <b>Declarative memory</b> is "
+        f"<b>{declarative_memory_score}</b><br>"
+        f"The Web Search Threshold is set to <b>{str(web_search_threshold)}</b> in the Google Cat plugin <b>settings</b>. "
+        "<br><br>"
+        "<b>Commencing Google Search ...</b>"
+        )
+
+        cat.send_ws_message(content=info_message, msg_type='chat')
         
-        # Initiate web search and update Cat's memory
-        cat.send_ws_message(content=browse_the_web(search_term, cat, get_results=webpages_to_ingest), msg_type='chat')
-        cat.recall_relevant_memories_to_working_memory()
-        cat.send_ws_message(content='Cheshire cat is thinking on ' + search_term + ' ...', msg_type='chat_token')
+        # Initiate web search
+        browse_the_web(search_term, cat, get_results=webpages_to_ingest)
+        return True
+
     
     # Check if the index is in range and if the web search should be performed
     if 0 <= 1 < len(cat_declarative_memories):
         if cat_declarative_memories[1][1] < web_search_threshold:
-            do_the_web_search()        
+            search_done = do_the_web_search()        
     else:
-        do_the_web_search()
+        search_done = do_the_web_search()
+
+    return search_done
 
 # Function for manual web search
 def manual_web_search(u_message, cat):
@@ -120,29 +156,26 @@ def manual_web_search(u_message, cat):
     if (webpages_to_ingest is None) or (webpages_to_ingest < 1):
         webpages_to_ingest = default_webpages_to_ingest
 
-    # Perform manual web search and update Cat's memory
-    result = browse_the_web(u_message, cat, get_results=webpages_to_ingest)
-    
-    # Print and send messages about the finished ingestion
-    print("Ingestion of URLs finished. Cheshire cat is thinking on " + u_message)
-    cat.send_ws_message(content=result, msg_type='chat')
-    cat.send_ws_message(content='Cheshire cat is thinking on ' + u_message + ' ...', msg_type='chat_token')
-        
-    cat.recall_relevant_memories_to_working_memory()
+    # Perform manual web search
+    browse_the_web(u_message, cat, get_results=webpages_to_ingest)
 
-# Hook function executed before Cat reads a message
-@hook
-def before_cat_reads_message(user_message_json: dict, cat):
-    message = user_message_json["text"]
+@hook(priority=5)
+def agent_fast_reply(fast_reply, cat):
+    return_direct = True
+
+    # Get user message from the working memory
+    message = cat.working_memory["user_message_json"]["text"]
     
     # Check if the message ends with '^' to trigger manual web search
     if message.endswith('^'):
         # Remove '^' and perform manual web search
         message = message[:-1]
         manual_web_search(message, cat)
-        user_message_json["text"] = message
+        print("Google Cat manual web search has finished. You can continue using the Cat ...")
+        return {"output": "Google Cat manual web search has <b>finished</b>. You can continue using the Cat ..."}
     else:
         # Perform automatic web search
-        automatic_web_search(message, cat)
+        if automatic_web_search(message, cat):
+            return {"output": "Google Cat automatic web search has <b>finished</b>. You can continue using the Cat ..."}
 
-    return user_message_json
+    return None
