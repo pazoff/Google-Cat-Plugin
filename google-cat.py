@@ -2,6 +2,7 @@ from cat.mad_hatter.decorators import tool, hook, plugin
 from typing import List, Union, Dict
 from pydantic import BaseModel
 from googlesearch import search
+from cat.log import log
 import threading
 import requests
 import json
@@ -38,10 +39,10 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
     def ingest_url(cat, url):
         try:
             cat.rabbit_hole.ingest_file(cat, url, 400, 100)
-            print('URL: ' + url + " Result: Ingested")
+            log.warning('URL: ' + url + " Result: Ingested")
             cat.send_ws_message(content='URL: ' + url + ' - <b>Ingested</b>', msg_type='chat')
         except Exception as e:
-            print('URL: ' + url + " Result: NOT Ingested")
+            log.warning('URL: ' + url + " Result: NOT Ingested")
             cat.send_ws_message(content='URL: ' + url + ' - <b>NOT</b> Ingested', msg_type='chat')
         
     
@@ -49,7 +50,7 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
     message = tool_input
     
     # Print and send messages about the ongoing search
-    print("Searching google for " + message)
+    log.warning("Searching google for " + message)
     cat.send_ws_message(content='Searching Google for ' + message, msg_type='chat_token')
     
     # Perform the Google search and get results
@@ -221,7 +222,7 @@ def agent_fast_reply(fast_reply, cat):
         if version_check:
             info_message = info_message + "<br>" + version_check
         
-        print(info_message)
+        log.warning(info_message)
         return {"output": info_message}
     else:
         # Perform automatic web search
