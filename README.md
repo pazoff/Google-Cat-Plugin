@@ -29,3 +29,7 @@ what is cheshire cat framework?^
 
 * The plugin now ingests multiple URLs at the same time, in the background, so you can continue working with the cat
 
+<img src="https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/img/google-cat-version-checking.png">
+
+* Added version checking
+
