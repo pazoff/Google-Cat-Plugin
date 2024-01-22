@@ -3,6 +3,8 @@ from typing import List, Union, Dict
 from pydantic import BaseModel
 from googlesearch import search
 import threading
+import requests
+import json
 
 # Settings
 
@@ -161,6 +163,44 @@ def manual_web_search(u_message, cat):
     # Perform manual web search
     browse_the_web(u_message, cat, get_results=webpages_to_ingest)
 
+
+def check_plugin_version():
+    try:
+        # Read local plugin.json file
+        with open('/app/cat/plugins/google-cat/plugin.json', 'r') as file:
+            local_data = json.load(file)
+
+        # Extract version from local data
+        local_version = local_data.get('version')
+
+        # Fetch GitHub plugin.json file
+        github_url = 'https://raw.githubusercontent.com/pazoff/Google-Cat-Plugin/main/plugin.json'
+        github_response = requests.get(github_url)
+
+        # Check if GitHub request was successful
+        github_response.raise_for_status()
+
+        # Parse GitHub response
+        github_data = github_response.json()
+        github_version = github_data.get('version')
+
+        # Compare versions
+        if github_version and local_version != github_version:
+            return f"<br>* A new version ({github_version}) of Google Cat is available. You have version {local_version}.<br>- https://github.com/pazoff/Google-Cat-Plugin"
+        else:
+            return False
+
+    except requests.RequestException as e:
+        #return f"Error: {str(e)}"
+        return False
+    except json.JSONDecodeError as e:
+        #return f"Error decoding JSON: {str(e)}"
+        return False
+    except Exception as e:
+        #return f"An unexpected error occurred: {str(e)}"
+        return False
+
+
 @hook(priority=5)
 def agent_fast_reply(fast_reply, cat):
     return_direct = True
@@ -172,9 +212,17 @@ def agent_fast_reply(fast_reply, cat):
     if message.endswith('^'):
         # Remove '^' and perform manual web search
         message = message[:-1]
+        
         manual_web_search(message, cat)
-        print("Google Cat manual web search has finished. You can continue using the Cat ...")
-        return {"output": "Google Cat manual web search has <b>finished</b>. You can continue using the Cat ..."}
+        
+        info_message = "Google Cat manual web search has <b>finished</b>. You can continue using the Cat ..."
+        
+        version_check = check_plugin_version()
+        if version_check:
+            info_message = info_message + "<br>" + version_check
+        
+        print(info_message)
+        return {"output": info_message}
     else:
         # Perform automatic web search
         if automatic_web_search(message, cat):
