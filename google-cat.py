@@ -40,7 +40,7 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
         try:
             cat.rabbit_hole.ingest_file(cat, url, 400, 100)
             log.warning('URL: ' + url + " Result: Ingested")
-            cat.send_ws_message(content='URL: ' + url + ' - <b>Ingested</b>', msg_type='chat')
+            #cat.send_ws_message(content='URL: ' + url + ' - <b>Ingested</b>', msg_type='chat')
         except Exception as e:
             log.warning('URL: ' + url + " Result: NOT Ingested")
             cat.send_ws_message(content='URL: ' + url + ' - <b>NOT</b> Ingested', msg_type='chat')
