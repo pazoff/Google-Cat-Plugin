@@ -216,24 +216,32 @@ def agent_fast_reply(fast_reply, cat):
         
         manual_web_search(message, cat)
         
-        #info_message = "Google Cat manual web search has <b>finished</b>. You can continue using the Cat ..."
-        info_message = "Google Cat manual web search has <b>finished</b>."
+        info_message = "Google Cat manual web search has <b>finished</b>. You can continue using the Cat ..."
+        #info_message = "Google Cat manual web search has <b>finished</b>."
         
         version_check = check_plugin_version()
         if version_check:
             info_message = info_message + "<br>" + version_check
         
         log.warning(info_message)
-        cat.recall_relevant_memories_to_working_memory(query=message)
-        cat.send_ws_message(content=info_message, msg_type='chat')
-        cat.send_ws_message(content=f'The Cat is Thinking on {message}', msg_type='chat_token')
-        #return {"output": info_message}
+        #cat.recall_relevant_memories_to_working_memory(query=message)
+        #cat.send_ws_message(content=info_message, msg_type='chat')
+        #cat.send_ws_message(content=f'The Cat is Thinking on {message}', msg_type='chat_token')
+        return {"output": info_message}
     else:
         # Perform automatic web search
         if automatic_web_search(message, cat):
-            cat.recall_relevant_memories_to_working_memory(query=message)
-            cat.send_ws_message(content=f'Google Cat automatic web search has <b>finished</b>.', msg_type='chat')
-            cat.send_ws_message(content=f'The Cat is Thinking on {message}', msg_type='chat_token')
-            #return {"output": "Google Cat automatic web search has <b>finished</b>. You can continue using the Cat ..."}
+            #cat.recall_relevant_memories_to_working_memory(query=message)
+            #cat.send_ws_message(content=f'Google Cat automatic web search has <b>finished</b>.', msg_type='chat')
+            #cat.send_ws_message(content=f'The Cat is Thinking on {message}', msg_type='chat_token')
+            return {"output": "Google Cat automatic web search has <b>finished</b>. You can continue using the Cat ..."}
 
     return None
+
+
+# @tool(return_direct=False)
+# def search_the_internet(tool_input, cat):
+#     """Use only if the tool_input contains the term search or internet. Input is a string."""
+
+#     manual_web_search(tool_input, cat)
+#     cat.recall_relevant_memories_to_working_memory(query=tool_input)
