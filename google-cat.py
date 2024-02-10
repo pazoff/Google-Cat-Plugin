@@ -30,6 +30,7 @@ def google_search_urls(query, url_results):
         search_results = list(search(query, sleep_interval=5, num_results=url_results))
         return search_results
     except Exception as e:
+        log.error(f"Search error: {e}")
         return []
 
 # Function to browse the web based on a search query
