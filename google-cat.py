@@ -33,17 +33,73 @@ def google_search_urls(query, url_results):
         log.error(f"Search error: {e}")
         return []
 
+def get_title_from_url(url):
+    """
+    Get the title from the provided URL.
+
+    Args:
+        url (str): The URL from which to extract the title.
+
+    Returns:
+        str: The extracted title, or "" if the title tag is not found or if there's an error.
+    """
+    try:
+        response = requests.get(url)
+        # Check if the request was successful (status code 200)
+        if response.status_code == 200:
+            # Find the index of <title> tag
+            start_index = response.text.find('<title>')
+            end_index = response.text.find('</title>')
+            # Extract the title from the HTML
+            if start_index != -1 and end_index != -1:
+                title = response.text[start_index + len('<title>'):end_index]
+                return title.strip()
+            else:
+                log.warning(f"Title tag not found in the HTML content of {url}.")
+                return ""
+        else:
+            log.error(f"Failed to fetch {url}. Status code:", response.status_code)
+            return ""
+    except Exception as e:
+        log.error(f"An error occurred processing the URL({url}):", e)
+        return ""
+
 # Function to browse the web based on a search query
 def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
+    """
+    Function to browse the web and ingest URLs in the background.
+
+    Parameters:
+    - tool_input: input message for the search
+    - cat: instance of the Cat class
+    - get_results: number of webpages to ingest (default value provided)
+
+    Returns:
+    - A message indicating the completion of browsing the web
+    """
     
     # Function to ingest a single URL in the background
-    def ingest_url(cat, url):
+    def ingest_url(cat, url, url_index):
+        """
+        Ingests a URL and logs the result. 
+
+        Args:
+            cat: The category of the URL.
+            url: The URL to be ingested.
+            url_index: The index of the URL.
+
+        Returns:
+            None
+        """
         try:
             cat.rabbit_hole.ingest_file(cat, url, 400, 100)
-            log.warning('URL: ' + url + " Result: Ingested")
-            cat.send_ws_message(content=' URL: ' + url + ' - Ingested ...', msg_type='chat_token')
+            #log.warning(f"{url_index}.URL: {url} - Ingested successfully.")
+            url_title = get_title_from_url(url)
+            cat.send_ws_message(content=f'<b>{url_index}. {url_title}</b> - URL: ' + url + ' - Ingested successfully.', msg_type='chat')
+            cat.send_ws_message(content=f'Ingesting URLs ...', msg_type='chat_token')
         except Exception as e:
-            log.warning('URL: ' + url + " Result: NOT Ingested")
+            #log.error(f"URL not ingested:{url} - Error: {e}")
+            print(f"ERROR: URL not ingested:{url} - ", e)
             #cat.send_ws_message(content='URL: ' + url + ' - <b>NOT</b> Ingested', msg_type='chat')
         
     
@@ -51,7 +107,7 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
     message = tool_input
     
     # Print and send messages about the ongoing search
-    log.warning("Searching google for " + message)
+    log.warning(f"Searching google for {message}")
     cat.send_ws_message(content='Searching Google for ' + message, msg_type='chat_token')
     
     # Perform the Google search and get results
@@ -76,7 +132,7 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
             break
         
         # Create a new thread for each URL ingestion
-        t = threading.Thread(target=ingest_url, args=(cat, url))
+        t = threading.Thread(target=ingest_url, args=(cat, url, i))
         
         # Start the thread
         t.start()
@@ -94,6 +150,16 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
 
 # Function for automatic web search based on settings
 def automatic_web_search(search_term, cat):
+    """
+    Perform an automatic web search based on the given search term and settings.
+
+    Parameters:
+    - search_term: the term to be searched
+    - cat: the category for the search
+
+    Returns:
+    - False if the search term ends with '*', else True if the automatic web search is performed successfully, else False
+    """
     if search_term.endswith('*'):
         return False
 
@@ -162,11 +228,16 @@ def manual_web_search(u_message, cat):
         webpages_to_ingest = default_webpages_to_ingest
 
     # Perform manual web search
-    cat.send_ws_message(content='Google Cat Manual Web Search', msg_type='chat')
+    cat.send_ws_message(content='Google Cat Web Search', msg_type='chat')
     browse_the_web(u_message, cat, get_results=webpages_to_ingest)
 
 
 def check_plugin_version():
+    """
+    Check the plugin version by reading the local plugin.json file and fetching the GitHub plugin.json file. 
+    Compare the versions and return a message if a new version is available. 
+    Return False if there is an error during the process.
+    """
     try:
         # Read local plugin.json file
         with open('/app/cat/plugins/google-cat/plugin.json', 'r') as file:
@@ -217,7 +288,7 @@ def agent_fast_reply(fast_reply, cat):
         
         manual_web_search(message, cat)
         
-        info_message = "Google Cat manual web search has <b>finished</b>. You can continue using the Cat ..."
+        info_message = "Google Cat web search has <b>finished</b>. You can continue using the Cat ..."
         #info_message = "Google Cat manual web search has <b>finished</b>."
         
         version_check = check_plugin_version()
