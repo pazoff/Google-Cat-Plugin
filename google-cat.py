@@ -96,7 +96,7 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
             #log.warning(f"{url_index}.URL: {url} - Ingested successfully.")
             url_title = get_title_from_url(url)
             cat.send_ws_message(content=f'<b>{url_index}. {url_title}</b> - URL: ' + url + ' - Ingested successfully.', msg_type='chat')
-            cat.send_ws_message(content=f'Ingesting URLs ...', msg_type='chat_token')
+            #cat.send_ws_message(content=f'Ingesting URLs ...', msg_type='chat_token')
         except Exception as e:
             #log.error(f"URL not ingested:{url} - Error: {e}")
             print(f"ERROR: URL not ingested:{url} - ", e)
@@ -143,8 +143,10 @@ def browse_the_web(tool_input, cat, get_results=default_webpages_to_ingest):
     # Join all the threads to wait for all URLs to be ingested
     for t in ingestion_threads:
         t.join()
+    
+    cat.send_ws_message(content=f'Google Cat: Browsing the web has <b>finished</b>.', msg_type='chat')
 
-    return "Browsing the web has <b>finished</b>."
+    return "Google Cat: Browsing the web has <b>finished</b>."
 
 
 
@@ -276,7 +278,7 @@ def check_plugin_version():
 
 @hook(priority=5)
 def agent_fast_reply(fast_reply, cat):
-    return_direct = True
+    #return_direct = True
 
     # Get user message from the working memory
     message = cat.working_memory["user_message_json"]["text"]
@@ -286,29 +288,32 @@ def agent_fast_reply(fast_reply, cat):
         # Remove '^' and perform manual web search
         message = message[:-1]
         
-        manual_web_search(message, cat)
+        #manual_web_search(message, cat)
+        search_tr = threading.Thread(target=manual_web_search, args=(message, cat))
+        search_tr.start()
         
-        info_message = "Google Cat web search has <b>finished</b>. You can continue using the Cat ..."
+        #info_message = "Google Cat web search has <b>finished</b>. You can continue using the Cat ..."
         #info_message = "Google Cat manual web search has <b>finished</b>."
+        info_message = "Google Cat manual web search working in the background."
         
         version_check = check_plugin_version()
         if version_check:
             info_message = info_message + "<br>" + version_check
         
         log.warning(info_message)
-        #cat.recall_relevant_memories_to_working_memory(query=message)
-        #cat.send_ws_message(content=info_message, msg_type='chat')
-        #cat.send_ws_message(content=f'The Cat is Thinking on {message}', msg_type='chat_token')
+        # cat.recall_relevant_memories_to_working_memory(query=message)
+        # cat.send_ws_message(content=info_message, msg_type='chat')
+        # cat.send_ws_message(content=f'The Cat is Thinking on {message}', msg_type='chat_token')
         return {"output": info_message}
     else:
         # Perform automatic web search
         if automatic_web_search(message, cat):
-            #cat.recall_relevant_memories_to_working_memory(query=message)
-            #cat.send_ws_message(content=f'Google Cat automatic web search has <b>finished</b>.', msg_type='chat')
-            #cat.send_ws_message(content=f'The Cat is Thinking on {message}', msg_type='chat_token')
-            return {"output": "Google Cat automatic web search has <b>finished</b>. You can continue using the Cat ..."}
+            cat.recall_relevant_memories_to_working_memory(query=message)
+            cat.send_ws_message(content=f'Google Cat automatic web search has <b>finished</b>.', msg_type='chat')
+            cat.send_ws_message(content=f'The Cat is Thinking on {message}', msg_type='chat_token')
+            #return {"output": "Google Cat automatic web search has <b>finished</b>. You can continue using the Cat ..."}
 
-    return None
+    return fast_reply
 
 
 # @tool(return_direct=False)
